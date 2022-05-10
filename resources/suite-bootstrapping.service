@@ -1,0 +1,14 @@
+[Unit]
+Description=Eclipse Kanto - Suite Bootstrapping
+Documentation=https://eclipse.org/kanto/docs/
+After=network.target mosquitto.service
+Requires=network.target
+Requires=mosquitto.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/suite-bootstrapping -configFile /etc/suite-bootstrapping/config.json
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
