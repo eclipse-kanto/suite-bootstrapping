@@ -15,7 +15,7 @@ require (
 	github.com/Jeffail/gabs/v2 v2.6.0 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/eclipse/paho.mqtt.golang v1.3.5 // indirect
+	github.com/eclipse/paho.mqtt.golang v1.4.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/google/go-tpm v0.3.2 // indirect
 	github.com/google/uuid v1.1.1 // indirect
@@ -26,6 +26,7 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
