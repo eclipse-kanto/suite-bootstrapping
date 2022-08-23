@@ -63,11 +63,11 @@ eclipse/ditto-clients-golang (0.0.0-20220225085802-cf3b306280d3)
 * Project: https://github.com/eclipse/ditto-clients-golang
 * Source:  https://github.com/eclipse/ditto-clients-golang/tree/cf3b306280d3453473ae8dd65e78f978e2c838ea
 
-eclipse/paho.mqtt.golang (1.3.5)
+eclipse/paho.mqtt.golang (1.4.1)
 
 * License: Eclipse Distribution License v1.0
 * Project: https://github.com/eclipse/paho.mqtt.golang
-* Source:  https://github.com/eclipse/paho.mqtt.golang/releases/tag/v1.3.5
+* Source:  https://github.com/eclipse/paho.mqtt.golang/releases/tag/v1.4.1
 
 fsnotify/fsnotify (1.5.1)
 
@@ -123,6 +123,12 @@ pkg/errors (0.9.1)
 * Project: https://github.com/pkg/errors
 * Source:  http://github.com/pkg/errors/releases/tag/v0.9.1
 
+natefinch/lumberjack (2.0.0)
+
+* License: MIT License
+* Project: https://github.com/natefinch/lumberjack
+* Source:  https://github.com/natefinch/lumberjack/releases/tag/v2.0.0
+
 google/go-tpm (0.3.2)
 
 * License: Apache License 2.0
@@ -135,6 +141,12 @@ golang.org/x/net (0.0.0-20210405180319-a5a99cb37ef4)
 * Project: https://github.com/golang/net
 * Source:  https://github.com/golang/net/tree/a5a99cb37ef4b68617775ab669177656090ab396
 
+golang.org/x/sync (v0.0.0-20210220032951-036812b2e83c)
+
+* License: BSD 3-Clause "New" or "Revised" License
+* Project: https://github.com/golang/sync
+* Source:  https://github.com/golang/sync/tree/036812b2e83c0ddf193dd5a34e034151da389d09
+
 golang.org/x/sys (0.0.0-20210630005230-0f9fa26af87c)
 
 * License: BSD 3-Clause "New" or "Revised" License
@@ -146,12 +158,6 @@ golang.org/x/time (v0.0.0-20190308202827-9d24e82272b4)
 * License: BSD 3-Clause "New" or "Revised" License
 * Project: https://github.com/golang/time
 * Source:  https://github.com/golang/time/tree/9d24e82272b4f38b78bc8cff74fa936d31ccd8ef
-
-natefinch/lumberjack (2.0.0)
-
-* License: MIT License
-* Project: https://github.com/natefinch/lumberjack
-* Source:  https://github.com/natefinch/lumberjack/releases/tag/v2.0.0
 
 ## Cryptography
 
