@@ -29,8 +29,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/eclipse-kanto/suite-connector v0.0.0-20220225135354-66267f960342 h1:3qzJoqctJMDZgl+WH7pYMHcAAgOdT/8ZPsgOKJfqqjk=
-github.com/eclipse-kanto/suite-connector v0.0.0-20220225135354-66267f960342/go.mod h1:bE+Ydj8vNyPTRBaEFJ4CAh3/2W+mz7eyGh19Wg0HswE=
+github.com/eclipse-kanto/suite-connector v0.1.0-M1.0.20220822083435-d47b0a2edf1a h1:Arf9Zhlz65DkGEzc2Vy5JqQVbd41ZUnJvKQOCt7YFxw=
+github.com/eclipse-kanto/suite-connector v0.1.0-M1.0.20220822083435-d47b0a2edf1a/go.mod h1:dT/Iz+SN/PbWatJQ6GBFJN5XX0TncX61WRQjylf2uJs=
 github.com/eclipse/ditto-clients-golang v0.0.0-20220225085802-cf3b306280d3 h1:bfFGs26yNSfhSi6xmnmykB0jZn1Vu5e1/7JA5Wu5aGc=
 github.com/eclipse/ditto-clients-golang v0.0.0-20220225085802-cf3b306280d3/go.mod h1:ey7YwfHSQJsinGkGbgeEgqZA7qJnoB0YiFVTFEY50Jg=
 github.com/eclipse/paho.mqtt.golang v1.3.5/go.mod h1:eTzb4gxwwyWpqBUHGQZ4ABAV7+Jgm1PklsYT/eo8Hcc=
@@ -151,12 +151,15 @@ github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnIn
 github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DMA2s=
 github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/yZzE=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/objx v0.1.1 h1:2vfRuCMp5sSVIDSqO8oNnWJq7mPa6KVP3iPIwFBuy8A=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/tevino/abool/v2 v2.0.1 h1:OF7FC5V5z3yAWyixbc32ecEzrgAJCsPkVOsPM2qoZPI=
+github.com/tevino/abool/v2 v2.0.1/go.mod h1:+Lmlqk6bHDWHqN1cbxqhwEAwMPXgc8I1SDEamtseuXY=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=

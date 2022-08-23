@@ -76,7 +76,7 @@ func (s *BootstrappingSuite) S() *BootstrappingSuite {
 }
 
 func (s *BootstrappingSuite) SetupSuite() {
-	s.logger = testutil.NewLogger("bootstrapping", logger.DEBUG)
+	s.logger = testutil.NewLogger("bootstrapping", logger.DEBUG, s.T())
 
 	s.settings = &bs.BootstrapSettings{
 		HubConnectionSettings: config.HubConnectionSettings{
