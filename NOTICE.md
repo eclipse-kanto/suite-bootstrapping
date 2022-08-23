@@ -129,6 +129,12 @@ natefinch/lumberjack (2.0.0)
 * Project: https://github.com/natefinch/lumberjack
 * Source:  https://github.com/natefinch/lumberjack/releases/tag/v2.0.0
 
+tevino/abool (2.0.1)
+
+* License: MIT License
+* Project: https://github.com/tevino/abool
+* Source:  https://github.com/tevino/abool/releases/tag/v2.0.1
+
 google/go-tpm (0.3.2)
 
 * License: Apache License 2.0
