@@ -269,8 +269,8 @@ func (a *Agent) PublishRequest(requestID string, publisher message.Publisher) er
 	}
 
 	if !hasConfig {
-		payload.Hash = hex.EncodeToString(sha256.New().Sum(nil))
-		return a.publish(publisher, msg, correlationID, requestID, 0, headersOpts...)
+		// include only the request ID when no prebootstrapping data is available
+		return a.publish(publisher, msg.WithPayload(payload), correlationID, requestID, 0, headersOpts...)
 	}
 
 	hasher := sha256.New()

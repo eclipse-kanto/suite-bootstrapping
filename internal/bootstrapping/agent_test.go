@@ -271,7 +271,7 @@ func (s *BootstrappingSuite) TestSendRequestNoPreconfig() {
 	err = agent.PublishRequest(requestID, s.publisher)
 	require.NoError(s.T(), err)
 
-	checkPublished(s, requestID, false, hex.EncodeToString(sha256.New().Sum(nil)))
+	checkPublished(s, requestID, false, "")
 }
 
 func (s *BootstrappingSuite) TestSendRequestEmptyPreconfig() {
@@ -296,7 +296,7 @@ func (s *BootstrappingSuite) TestSendRequestEmptyPreconfig() {
 	err = agent.PublishRequest(requestID, s.publisher)
 	require.NoError(s.T(), err)
 
-	checkPublished(s, requestID, false, hex.EncodeToString(sha256.New().Sum(nil)))
+	checkPublished(s, requestID, false, "")
 }
 
 // Handle response tests
@@ -586,14 +586,13 @@ func assertRequestEnvelope(
 ) {
 	assert.EqualValues(s.T(), requestTopic, actual.Topic.String(), index)
 	assert.EqualValues(s.T(), requestPath, actual.Path, index)
-	if actual.Value != nil {
-		actualData := &bs.RequestData{}
-		extractAsData(s.T(), actual.Value, actualData)
 
-		require.Equal(s.T(), requestID, actualData.ID)
-		assert.Equal(s.T(), hasChunk, len(actualData.Chunk) > 0, index)
-		assert.Equal(s.T(), hash, actualData.Hash, index)
-	}
+	actualData := &bs.RequestData{}
+	extractAsData(s.T(), actual.Value, actualData)
+
+	require.Equal(s.T(), requestID, actualData.ID)
+	assert.Equal(s.T(), hasChunk, len(actualData.Chunk) > 0, index)
+	assert.Equal(s.T(), hash, actualData.Hash, index)
 }
 
 func responseMsg(deviceID string, payload interface{}, required bool) *message.Message {
