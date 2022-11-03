@@ -324,7 +324,7 @@ func (a *Agent) publish(
 
 // HandleResponse handles Bootstrapping response messages.
 func (a *Agent) HandleResponse(inboxMsg *message.Message) ([]*message.Message, error) {
-	correlationID, msgErr, err, respReq := a.handleResponseMessage(inboxMsg)
+	correlationID, msgErr, respReq, err := a.handleResponseMessage(inboxMsg)
 
 	if a.request != nil {
 		status := a.request.status
@@ -357,13 +357,13 @@ func (a *Agent) HandleResponse(inboxMsg *message.Message) ([]*message.Message, e
 	return nil, err
 }
 
-func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageError, error, bool) {
+func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageError, bool, error) {
 	var rspMsg *protocol.Envelope
 	if err := json.Unmarshal(msg.Payload, &rspMsg); err != nil {
 		a.Logger.Error("Unexpected message format", err, watermill.LogFields{
 			"uuid": msg.UUID,
 		})
-		return "", NewMessageParameterInvalidError(), err, false
+		return "", NewMessageParameterInvalidError(), false, err
 	}
 
 	correlationID := rspMsg.Headers.CorrelationID()
@@ -379,7 +379,7 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageErr
 		if rspMsg.Path == bsResponsePath {
 			payload, err := json.Marshal(rspMsg.Value)
 			if err != nil {
-				return "", NewMessageParameterInvalidError(), errors.Wrapf(err, "invalid payload: %v", rspMsg.Value), respReq
+				return "", NewMessageParameterInvalidError(), respReq, errors.Wrapf(err, "invalid payload: %v", rspMsg.Value)
 			}
 
 			var response ResponseData
@@ -391,14 +391,14 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageErr
 						"uuid":                msg.UUID,
 						logFieldCorrelationID: correlationID,
 					})
-				return replyToID, NewMessageParameterInvalidError(), errData, respReq
+				return replyToID, NewMessageParameterInvalidError(), respReq, errData
 			}
 
 			id := a.requestID()
 			if id != response.ID {
 				return replyToID,
-					NewMessageParameterInvalidError(),
-					errors.New("response with unknown request ID is not handled"), respReq
+					NewMessageParameterInvalidError(), respReq,
+					errors.New("response with unknown request ID is not handled")
 			}
 			if msgError, err := a.addRequestResponse(response, msg.UUID, correlationID); err != nil {
 				a.request.status = statusFailed
@@ -409,11 +409,11 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageErr
 					bsRequestID:           response.ID,
 				})
 
-				return replyToID, msgError, err, respReq
+				return replyToID, msgError, respReq, err
 			}
 		}
 	}
-	return replyToID, nil, nil, respReq
+	return replyToID, nil, respReq, nil
 }
 
 func (a *Agent) addRequestResponse(data ResponseData, msgUID, correlationID string) (*MessageError, error) {
