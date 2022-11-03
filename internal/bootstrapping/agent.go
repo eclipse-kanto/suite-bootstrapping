@@ -370,7 +370,7 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageErr
 	respReq := rspMsg.Headers.IsResponseRequired()
 
 	var replyToID string
-	
+
 	if respReq && len(correlationID) > 0 {
 		replyToID = correlationID
 	}
