@@ -372,7 +372,7 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, bool, *Mess
 		if rspMsg.Path == bsResponsePath {
 			payload, err := json.Marshal(rspMsg.Value)
 			if err != nil {
-				return "", respReq, NewMessageParameterInvalidError(), errors.Wrapf(err, "invalid payload: %v", rspMsg.Value)
+				return correlationID, respReq, NewMessageParameterInvalidError(), errors.Wrapf(err, "invalid payload: %v", rspMsg.Value)
 			}
 
 			var response ResponseData
