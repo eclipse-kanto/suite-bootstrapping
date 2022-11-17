@@ -324,7 +324,7 @@ func (a *Agent) publish(
 
 // HandleResponse handles Bootstrapping response messages.
 func (a *Agent) HandleResponse(inboxMsg *message.Message) ([]*message.Message, error) {
-	correlationID, msgErr, err := a.handleResponseMessage(inboxMsg)
+	correlationID, respReq, msgErr, err := a.handleResponseMessage(inboxMsg)
 
 	if a.request != nil {
 		status := a.request.status
@@ -335,7 +335,7 @@ func (a *Agent) HandleResponse(inboxMsg *message.Message) ([]*message.Message, e
 		}
 	}
 
-	if len(correlationID) > 0 {
+	if respReq {
 		statusMsg := things.NewMessage(model.NewNamespacedIDFrom(a.settings.DeviceID)).
 			Feature(bsFeatureID).
 			Outbox(bsOperationResponse)
@@ -350,34 +350,29 @@ func (a *Agent) HandleResponse(inboxMsg *message.Message) ([]*message.Message, e
 			env = statusMsg.Envelope(protocol.WithCorrelationID(correlationID)).
 				WithStatus(http.StatusNoContent)
 		}
-
 		return responseStatusMessage(inboxMsg, env, correlationID)
 	}
 
 	return nil, err
 }
 
-func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageError, error) {
+func (a *Agent) handleResponseMessage(msg *message.Message) (string, bool, *MessageError, error) {
 	var rspMsg *protocol.Envelope
 	if err := json.Unmarshal(msg.Payload, &rspMsg); err != nil {
 		a.Logger.Error("Unexpected message format", err, watermill.LogFields{
 			"uuid": msg.UUID,
 		})
-		return "", NewMessageParameterInvalidError(), err
+		return "", false, NewMessageParameterInvalidError(), err
 	}
 
 	correlationID := rspMsg.Headers.CorrelationID()
-	var replyToID string
-	// if rspMsg.Headers.IsResponseRequired() { // Uncomment when ditto header default value impl is fixed
-	if len(correlationID) > 0 {
-		replyToID = correlationID
-	}
+	respReq := rspMsg.Headers.IsResponseRequired()
 
 	if model.NewNamespacedID(rspMsg.Topic.Namespace, rspMsg.Topic.EntityName).String() == a.settings.DeviceID {
 		if rspMsg.Path == bsResponsePath {
 			payload, err := json.Marshal(rspMsg.Value)
 			if err != nil {
-				return "", NewMessageParameterInvalidError(), errors.Wrapf(err, "invalid payload: %v", rspMsg.Value)
+				return correlationID, respReq, NewMessageParameterInvalidError(), errors.Wrapf(err, "invalid payload: %v", rspMsg.Value)
 			}
 
 			var response ResponseData
@@ -389,12 +384,12 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageErr
 						"uuid":                msg.UUID,
 						logFieldCorrelationID: correlationID,
 					})
-				return replyToID, NewMessageParameterInvalidError(), errData
+				return correlationID, respReq, NewMessageParameterInvalidError(), errData
 			}
 
 			id := a.requestID()
 			if id != response.ID {
-				return replyToID,
+				return correlationID, respReq,
 					NewMessageParameterInvalidError(),
 					errors.New("response with unknown request ID is not handled")
 			}
@@ -407,11 +402,15 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, *MessageErr
 					bsRequestID:           response.ID,
 				})
 
-				return replyToID, msgError, err
+				return correlationID, respReq, msgError, err
 			}
+			return correlationID, respReq, nil, nil
 		}
+		return correlationID, respReq, NewMessageParameterInvalidError(),
+			errors.New("response with wrong path is not handled")
 	}
-	return replyToID, nil, nil
+	return correlationID, respReq, NewMessageParameterInvalidError(),
+		errors.New("response with unknown device ID is not handled")
 }
 
 func (a *Agent) addRequestResponse(data ResponseData, msgUID, correlationID string) (*MessageError, error) {
