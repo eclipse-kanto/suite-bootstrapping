@@ -404,9 +404,13 @@ func (a *Agent) handleResponseMessage(msg *message.Message) (string, bool, *Mess
 
 				return correlationID, respReq, msgError, err
 			}
+			return correlationID, respReq, nil, nil
 		}
+		return correlationID, respReq, NewMessageParameterInvalidError(),
+			errors.New("response with wrong path is not handled")
 	}
-	return correlationID, respReq, nil, nil
+	return correlationID, respReq, NewMessageParameterInvalidError(),
+		errors.New("response with unknown device ID is not handled")
 }
 
 func (a *Agent) addRequestResponse(data ResponseData, msgUID, correlationID string) (*MessageError, error) {
