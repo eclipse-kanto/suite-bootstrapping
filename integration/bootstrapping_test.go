@@ -45,7 +45,7 @@ const (
 type environmentTestCredentials struct {
 	CaCert   string `env:"caCert" envDefault:"/etc/suite-connector/iothub.crt"`
 	LogFile  string `env:"logFile" envDefault:"/var/log/suite-connector/suite-connector.log"`
-	PolicyId string `env:"POLICY_ID"`
+	PolicyID string `env:"POLICY_ID"`
 	ScConfig string `env:"configFile" envDefault:"/etc/suite-connector/config.json"`
 	ScBackup string `env:"configFileBackup" envDefault:"/etc/suite-connector/configBackup.json"`
 	BsConfig string `env:"configBootstrapFile" envDefault:"/etc/suite-bootstrapping/config.json"`
@@ -170,28 +170,28 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 	bootCfg, err := getBootstrapConfigStruct(suite.envCredentials.BsConfig)
 	require.NoError(suite.T(), err, "error getting bootstrapping configuration")
 
-	deviceId := bootCfg.DeviceID + "FromBootstrapping"
+	deviceID := bootCfg.DeviceID + "FromBootstrapping"
 
 	cfg := &util.ConnectorConfiguration{
 		CaCert:   suite.envCredentials.CaCert,
 		LogFile:  suite.envCredentials.LogFile,
 		Address:  bootCfg.Address,
-		DeviceID: deviceId,
+		DeviceID: deviceID,
 		TenantID: bootCfg.TenantID,
-		AuthID:   strings.ReplaceAll(deviceId, ":", "_"),
+		AuthID:   strings.ReplaceAll(deviceID, ":", "_"),
 		Password: bootCfg.Password,
 	}
 
 	registryAPI := strings.TrimSuffix(suite.envCredentials.DeviceRegistryAPIAddress, "/") + "/v1"
 	createdResources := util.CreateDeviceResources(
-		deviceId, cfg.TenantID, suite.envCredentials.PolicyId, cfg.Password, registryAPI,
+		deviceID, cfg.TenantID, suite.envCredentials.PolicyID, cfg.Password, registryAPI,
 		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword, suite.Cfg)
 
 	url := getTenantURL(suite.envCredentials.DeviceRegistryAPIAddress, cfg.TenantID)
 
-	err = util.RegisterDeviceResources(suite.Cfg, createdResources, deviceId, url,
+	err = util.RegisterDeviceResources(suite.Cfg, createdResources, deviceID, url,
 		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword)
-	defer util.DeleteResources(suite.Cfg, createdResources, deviceId, url,
+	defer util.DeleteResources(suite.Cfg, createdResources, deviceID, url,
 		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword)
 	require.NoError(suite.T(), err, "error registering devices")
 
@@ -239,7 +239,7 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 
 	time.Sleep(20 * time.Second)
 
-	cmd := things.NewCommand(model.NewNamespacedIDFrom(deviceId)).Twin().Feature("ConnectorTestFeature").
+	cmd := things.NewCommand(model.NewNamespacedIDFrom(deviceID)).Twin().Feature("ConnectorTestFeature").
 		Modify((&model.Feature{}).WithProperty("testProperty", "testValue"))
 	msg := cmd.Envelope(protocol.WithResponseRequired(true))
 

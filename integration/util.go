@@ -75,9 +75,9 @@ func createBootstrappingResponsePayload(
 	}, nil
 }
 
-func getTenantURL(address, tenantId string) string {
+func getTenantURL(address, tenantID string) string {
 	return fmt.Sprintf("%s/v1/devices/%s/",
-		strings.TrimSuffix(address, "/"), tenantId)
+		strings.TrimSuffix(address, "/"), tenantID)
 }
 
 func backupRestoreFile(src, dst string, restore bool) error {
