@@ -4,6 +4,8 @@ go 1.17
 
 require (
 	github.com/ThreeDotsLabs/watermill v1.1.1
+	github.com/caarlos0/env/v6 v6.10.1
+	github.com/eclipse-kanto/kanto/integration/util v0.0.0-20230328135258-f7cf7c41b5dc
 	github.com/eclipse-kanto/suite-connector v0.1.0-M2.0.20230222081206-577d4deaa329
 	github.com/eclipse/ditto-clients-golang v0.0.0-20220225085802-cf3b306280d3
 	github.com/imdario/mergo v0.3.12
