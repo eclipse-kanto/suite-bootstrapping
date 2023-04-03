@@ -15,12 +15,7 @@
 package integration
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -172,7 +167,7 @@ func TestBootstrappingSuite(t *testing.T) {
 }
 
 func (suite *bootstrappingSuite) TestBootstrapping() {
-	bootCfg, err := GetBootstrapConfigStruct(suite.envCredentials.BsConfig)
+	bootCfg, err := getBootstrapConfigStruct(suite.envCredentials.BsConfig)
 	require.NoError(suite.T(), err, "error getting bootstrapping configuration")
 
 	deviceId := bootCfg.DeviceID + "FromBootstrapping"
@@ -192,7 +187,7 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 		deviceId, cfg.TenantID, suite.envCredentials.PolicyId, cfg.Password, registryAPI,
 		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword, suite.Cfg)
 
-	url := suite.getTenantURL(cfg.TenantID)
+	url := getTenantURL(suite.envCredentials.DeviceRegistryAPIAddress, cfg.TenantID)
 
 	err = util.RegisterDeviceResources(suite.Cfg, createdResources, deviceId, url,
 		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword)
@@ -202,7 +197,8 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 
 	src := suite.envCredentials.ScConfig
 	dst := suite.envCredentials.ScBackup
-	suite.backupRestoreFile(src, dst, false)
+	err = backupRestoreFile(src, dst, false)
+	require.NoError(suite.T(), err, "unable to backup suite-connector service config file '%s'", src)
 
 	wsConnection, err := util.NewDigitalTwinWSConnection(suite.Cfg)
 	defer wsConnection.Close()
@@ -213,7 +209,7 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 	defer util.UnsubscribeFromWSMessages(suite.Cfg, wsConnection, util.StopSendMessages)
 	require.NoError(suite.T(), err, "unable to listen for messages by using a websocket connection")
 
-	payload, err := suite.createBootstrappingResponsePayload(cfg, deviceId)
+	payload, err := createBootstrappingResponsePayload(cfg, suite.requestID)
 	require.NoError(suite.T(), err, "unable to create payload of bootstrapping response")
 
 	_, err = util.ExecuteOperation(suite.Cfg, suite.bootstrappingFeatureURL, actionResponse, payload)
@@ -253,44 +249,6 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 	_, err = exec.Command("systemctl", "stop", suiteConnector).Output()
 	require.NoError(suite.T(), err, "unable to stop '%s'", suiteConnector)
 
-	suite.backupRestoreFile(dst, src, true)
-}
-
-func (suite *bootstrappingSuite) createBootstrappingResponsePayload(
-	cfg *util.ConnectorConfiguration, deviceId string) (map[string]interface{}, error) {
-
-	jsonContents, err := json.MarshalIndent(cfg, "", "\t")
-	if err != nil {
-		return nil, err
-	}
-
-	jsonDataHasher := sha256.New()
-	rawEncoded := base64.StdEncoding.EncodeToString(jsonContents)
-	_, err = jsonDataHasher.Write(jsonContents)
-	if err != nil {
-		return nil, err
-	}
-
-	return map[string]interface{}{
-		"requestId": suite.requestID,
-		"chunk":     rawEncoded,
-		"hash":      hex.EncodeToString(jsonDataHasher.Sum(nil)),
-	}, nil
-}
-
-func (suite *bootstrappingSuite) getTenantURL(tenantId string) string {
-	return fmt.Sprintf("%s/v1/devices/%s/",
-		strings.TrimSuffix(suite.envCredentials.DeviceRegistryAPIAddress, "/"), tenantId)
-}
-
-func (suite *bootstrappingSuite) backupRestoreFile(src, dst string, restore bool) {
-	if src != "" && dst != "" {
-		err := util.CopyFile(src, dst)
-		require.NoErrorf(suite.T(), err, "unable to copy '%s' file to '%s", src, dst)
-
-		if restore {
-			err = os.Remove(src)
-			require.NoErrorf(suite.T(), err, "unable to delete file '%s'", src)
-		}
-	}
+	err = backupRestoreFile(dst, src, true)
+	require.NoError(suite.T(), err, "unable to restore suite-connector service config file '%s'", dst)
 }

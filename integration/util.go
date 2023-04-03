@@ -13,14 +13,18 @@
 package integration
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/eclipse-kanto/kanto/integration/util"
 )
 
-func GetBootstrapConfigStruct(path string) (util.BootstrapConfiguration, error) {
+func getBootstrapConfigStruct(path string) (util.BootstrapConfiguration, error) {
 	cfg := util.BootstrapConfiguration{}
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -47,4 +51,46 @@ func parseString(value interface{}) (string, error) {
 		return "", fmt.Errorf("failed to parse the property to string")
 	}
 	return property, nil
+}
+
+func createBootstrappingResponsePayload(
+	cfg *util.ConnectorConfiguration, requestID string) (map[string]interface{}, error) {
+
+	jsonContents, err := json.MarshalIndent(cfg, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+
+	jsonDataHasher := sha256.New()
+	rawEncoded := base64.StdEncoding.EncodeToString(jsonContents)
+	_, err = jsonDataHasher.Write(jsonContents)
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]interface{}{
+		"requestId": requestID,
+		"chunk":     rawEncoded,
+		"hash":      hex.EncodeToString(jsonDataHasher.Sum(nil)),
+	}, nil
+}
+
+func getTenantURL(address, tenantId string) string {
+	return fmt.Sprintf("%s/v1/devices/%s/",
+		strings.TrimSuffix(address, "/"), tenantId)
+}
+
+func backupRestoreFile(src, dst string, restore bool) error {
+	if src != "" && dst != "" {
+		if err := util.CopyFile(src, dst); err != nil {
+			return err
+		}
+
+		if restore {
+			if err := os.Remove(src); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
