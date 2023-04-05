@@ -66,7 +66,6 @@ type bootstrappingSuite struct {
 
 	util.SuiteInitializer
 
-	bootstrappingThingURL   string
 	bootstrappingFeatureURL string
 
 	envTestCredentials envTestCredentials
@@ -147,8 +146,8 @@ func getThingConfigurationBootstrapping(t *testing.T, cfg *util.TestConfiguratio
 func (suite *bootstrappingSuite) SetupSuite() {
 	suite.SetupBootstrapping(suite.T())
 
-	suite.bootstrappingThingURL = util.GetThingURL(suite.Cfg.DigitalTwinAPIAddress, suite.ThingCfg.DeviceID)
-	suite.bootstrappingFeatureURL = util.GetFeatureURL(suite.bootstrappingThingURL, bootstrappingFeatureID)
+	bootstrappingThingURL := util.GetThingURL(suite.Cfg.DigitalTwinAPIAddress, suite.ThingCfg.DeviceID)
+	suite.bootstrappingFeatureURL = util.GetFeatureURL(bootstrappingThingURL, bootstrappingFeatureID)
 
 	envTestCredentials, err := getEnvironmentTestCredentials()
 	require.NoError(suite.T(), err, "error getting environment credentials")
