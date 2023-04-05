@@ -15,6 +15,7 @@
 package integration
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -41,8 +42,8 @@ const (
 	suiteConnector                     = "suite-connector.service"
 )
 
-// EnvironmentTestCredentials holds credentials for test
-type environmentTestCredentials struct {
+// envTestCredentials holds credentials for test
+type envTestCredentials struct {
 	CaCert   string `env:"caCert" envDefault:"/etc/suite-connector/iothub.crt"`
 	LogFile  string `env:"logFile" envDefault:"/var/log/suite-connector/suite-connector.log"`
 	PolicyID string `env:"POLICY_ID"`
@@ -54,6 +55,10 @@ type environmentTestCredentials struct {
 
 	DeviceRegistryAPIUsername string `env:"DEVICE_REGISTRY_API_USERNAME" envDefault:"ditto"`
 	DeviceRegistryAPIPassword string `env:"DEVICE_REGISTRY_API_PASSWORD" envDefault:"ditto"`
+
+	StatusTimeoutMs             int `env:"SCT_STATUS_TIMEOUT_MS" envDefault:"10000"`
+	StatusReadySinceTimeDeltaMs int `env:"SCT_STATUS_READY_SINCE_TIME_DELTA_MS" envDefault:"0"`
+	StatusRetryIntervalMs       int `env:"SCT_STATUS_RETRY_INTERVAL_MS" envDefault:"2000"`
 }
 
 type bootstrappingSuite struct {
@@ -64,7 +69,7 @@ type bootstrappingSuite struct {
 	bootstrappingThingURL   string
 	bootstrappingFeatureURL string
 
-	envCredentials environmentTestCredentials
+	envTestCredentials envTestCredentials
 
 	requestID string
 }
@@ -95,7 +100,6 @@ func (suite *bootstrappingSuite) SetupBootstrapping(t *testing.T) {
 	suite.MQTTClient = mqttClient
 	suite.ThingCfg, suite.requestID, err = getThingConfigurationBootstrapping(t, cfg)
 	if err != nil {
-		defer suite.TearDown()
 		require.NoError(t, err, "cannot get thing configuration")
 	}
 }
@@ -146,14 +150,14 @@ func (suite *bootstrappingSuite) SetupSuite() {
 	suite.bootstrappingThingURL = util.GetThingURL(suite.Cfg.DigitalTwinAPIAddress, suite.ThingCfg.DeviceID)
 	suite.bootstrappingFeatureURL = util.GetFeatureURL(suite.bootstrappingThingURL, bootstrappingFeatureID)
 
-	envCredentials, err := getEnvironmentTestCredentials()
+	envTestCredentials, err := getEnvironmentTestCredentials()
 	require.NoError(suite.T(), err, "error getting environment credentials")
-	suite.envCredentials = envCredentials
+	suite.envTestCredentials = envTestCredentials
 }
 
-func getEnvironmentTestCredentials() (environmentTestCredentials, error) {
+func getEnvironmentTestCredentials() (envTestCredentials, error) {
 	opts := env.Options{RequiredIfNoDef: true}
-	creds := environmentTestCredentials{}
+	creds := envTestCredentials{}
 	err := env.Parse(&creds, opts)
 	return creds, err
 }
@@ -167,14 +171,14 @@ func TestBootstrappingSuite(t *testing.T) {
 }
 
 func (suite *bootstrappingSuite) TestBootstrapping() {
-	bootCfg, err := getBootstrapConfigStruct(suite.envCredentials.BsConfig)
+	bootCfg, err := getBootstrapConfigStruct(suite.envTestCredentials.BsConfig)
 	require.NoError(suite.T(), err, "error getting bootstrapping configuration")
 
 	deviceID := bootCfg.DeviceID + "FromBootstrapping"
 
 	cfg := &util.ConnectorConfiguration{
-		CaCert:   suite.envCredentials.CaCert,
-		LogFile:  suite.envCredentials.LogFile,
+		CaCert:   suite.envTestCredentials.CaCert,
+		LogFile:  suite.envTestCredentials.LogFile,
 		Address:  bootCfg.Address,
 		DeviceID: deviceID,
 		TenantID: bootCfg.TenantID,
@@ -182,21 +186,21 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 		Password: bootCfg.Password,
 	}
 
-	registryAPI := strings.TrimSuffix(suite.envCredentials.DeviceRegistryAPIAddress, "/") + "/v1"
+	registryAPI := strings.TrimSuffix(suite.envTestCredentials.DeviceRegistryAPIAddress, "/") + "/v1"
 	createdResources := util.CreateDeviceResources(
-		deviceID, cfg.TenantID, suite.envCredentials.PolicyID, cfg.Password, registryAPI,
-		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword, suite.Cfg)
+		deviceID, cfg.TenantID, suite.envTestCredentials.PolicyID, cfg.Password, registryAPI,
+		suite.envTestCredentials.DeviceRegistryAPIUsername, suite.envTestCredentials.DeviceRegistryAPIPassword, suite.Cfg)
 
-	url := getTenantURL(suite.envCredentials.DeviceRegistryAPIAddress, cfg.TenantID)
+	url := getTenantURL(suite.envTestCredentials.DeviceRegistryAPIAddress, cfg.TenantID)
 
 	err = util.RegisterDeviceResources(suite.Cfg, createdResources, deviceID, url,
-		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword)
+		suite.envTestCredentials.DeviceRegistryAPIUsername, suite.envTestCredentials.DeviceRegistryAPIPassword)
 	defer util.DeleteResources(suite.Cfg, createdResources, deviceID, url,
-		suite.envCredentials.DeviceRegistryAPIUsername, suite.envCredentials.DeviceRegistryAPIPassword)
+		suite.envTestCredentials.DeviceRegistryAPIUsername, suite.envTestCredentials.DeviceRegistryAPIPassword)
 	require.NoError(suite.T(), err, "error registering devices")
 
-	src := suite.envCredentials.ScConfig
-	dst := suite.envCredentials.ScBackup
+	src := suite.envTestCredentials.ScConfig
+	dst := suite.envTestCredentials.ScBackup
 	err = backupRestoreFile(src, dst, false)
 	require.NoError(suite.T(), err, "unable to backup suite-connector service config file '%s'", src)
 
@@ -237,7 +241,7 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 
 	require.NoError(suite.T(), result, "error while receiving suite-bootstrapping response")
 
-	time.Sleep(20 * time.Second)
+	suite.isConnected(deviceID)
 
 	cmd := things.NewCommand(model.NewNamespacedIDFrom(deviceID)).Twin().Feature("ConnectorTestFeature").
 		Modify((&model.Feature{}).WithProperty("testProperty", "testValue"))
@@ -251,4 +255,53 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 
 	err = backupRestoreFile(dst, src, true)
 	require.NoError(suite.T(), err, "unable to restore suite-connector service config file '%s'", dst)
+}
+
+func (suite *bootstrappingSuite) isConnected(deviceID string) {
+	type connectionStatus struct {
+		ReadySince time.Time `json:"readySince"`
+		ReadyUntil time.Time `json:"readyUntil"`
+	}
+
+	timeout := util.MillisToDuration(suite.envTestCredentials.StatusTimeoutMs)
+	threshold := time.Now().Add(timeout)
+
+	firstTime := true
+	sleepDuration := util.MillisToDuration(suite.envTestCredentials.StatusRetryIntervalMs)
+	for {
+		if !firstTime {
+			time.Sleep(sleepDuration)
+		}
+		firstTime = false
+
+		body, err := util.GetFeaturePropertyValue(suite.Cfg,
+			util.GetFeatureURL(util.GetThingURL(suite.Cfg.DigitalTwinAPIAddress, deviceID), "ConnectionStatus"), "status")
+		now := time.Now()
+		if err != nil {
+			if now.Before(threshold) {
+				continue
+			}
+			suite.T().Errorf("connection status property not available: %v", err)
+			break
+		}
+
+		status := &connectionStatus{}
+		err = json.Unmarshal(body, status)
+		require.NoError(suite.T(), err, "connection status should be parsed")
+
+		forever := time.Date(9999, time.December, 31, 23, 59, 59, 0, time.UTC)
+		if !forever.Equal(status.ReadyUntil) {
+			if now.Before(threshold) {
+				continue
+			}
+			suite.T().Errorf("readyUntil should be %v", forever)
+			break
+		}
+
+		delta := int64(suite.envTestCredentials.StatusReadySinceTimeDeltaMs)
+
+		require.Lessf(suite.T(), status.ReadySince.UnixMilli(),
+			time.Now().UnixMilli()+delta, "readySince should be before current time")
+		break
+	}
 }
