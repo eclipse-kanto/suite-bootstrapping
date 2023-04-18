@@ -24,14 +24,13 @@ import (
 	"github.com/eclipse-kanto/kanto/integration/util"
 )
 
-func getBootstrapConfigStruct(path string) (util.BootstrapConfiguration, error) {
-	cfg := util.BootstrapConfiguration{}
+func getBootstrapConfigStruct(path string) (*util.BootstrapConfiguration, error) {
+	cfg := &util.BootstrapConfiguration{}
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return cfg, fmt.Errorf("unable to read file '%s': %v", path, err)
 	}
-	err = json.Unmarshal(content, &cfg)
-	if err != nil {
+	if err := json.Unmarshal(content, &cfg); err != nil {
 		return cfg, fmt.Errorf("unable to unmarshal to json: %v", err)
 	}
 	return cfg, nil
@@ -53,8 +52,8 @@ func parseString(value interface{}) (string, error) {
 	return property, nil
 }
 
-func createBootstrappingResponsePayload(
-	cfg *util.ConnectorConfiguration, requestID string) (map[string]interface{}, error) {
+func createBootstrappingResponsePayload(cfg *util.ConnectorConfiguration, requestID string) (
+	map[string]interface{}, error) {
 
 	jsonContents, err := json.MarshalIndent(cfg, "", "\t")
 	if err != nil {

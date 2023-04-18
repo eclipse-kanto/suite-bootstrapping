@@ -38,8 +38,8 @@ const (
 	actionResponse                     = "response"
 	msgFailedCreateWebsocketConnection = "failed to create websocket connection"
 	eventFilterTemplate                = "like(resource:path,'/features/%s/*')"
-	sbServiceName                      = "suite-bootstrapping.service"
-	suiteConnector                     = "suite-connector.service"
+	suiteBootstrappingService          = "suite-bootstrapping.service"
+	suiteConnectorService              = "suite-connector.service"
 )
 
 // envTestCredentials holds credentials for test
@@ -99,6 +99,7 @@ func (suite *bootstrappingSuite) SetupBootstrapping(t *testing.T) {
 	suite.MQTTClient = mqttClient
 	suite.ThingCfg, suite.requestID, err = getThingConfigurationBootstrapping(t, cfg)
 	if err != nil {
+		defer suite.TearDown()
 		require.NoError(t, err, "cannot get thing configuration")
 	}
 }
@@ -114,8 +115,8 @@ func getThingConfigurationBootstrapping(t *testing.T, cfg *util.TestConfiguratio
 	defer util.UnsubscribeFromWSMessages(cfg, connMessages, util.StopSendMessages)
 	require.NoError(t, err, "error subscribing for WS messages")
 
-	_, err = exec.Command("systemctl", "restart", sbServiceName).Output()
-	require.NoError(t, err, "expected restart operation to be successful")
+	_, err = exec.Command("systemctl", "restart", suiteBootstrappingService).Output()
+	require.NoError(t, err, "expected restart '%s' to be successful", suiteBootstrappingService)
 
 	var thingConfig *util.ThingConfiguration
 	var propertyRequestID string
@@ -249,8 +250,8 @@ func (suite *bootstrappingSuite) TestBootstrapping() {
 	err = suite.DittoClient.Send(msg)
 	require.NoError(suite.T(), err, "create test feature")
 
-	_, err = exec.Command("systemctl", "stop", suiteConnector).Output()
-	require.NoError(suite.T(), err, "unable to stop '%s'", suiteConnector)
+	_, err = exec.Command("systemctl", "stop", suiteConnectorService).Output()
+	require.NoError(suite.T(), err, "unable to stop '%s'", suiteConnectorService)
 
 	err = backupRestoreFile(dst, src, true)
 	require.NoError(suite.T(), err, "unable to restore suite-connector service config file '%s'", dst)
