@@ -98,10 +98,7 @@ func (suite *bootstrappingSuite) SetupBootstrapping(t *testing.T) {
 	suite.DittoClient = dittoClient
 	suite.MQTTClient = mqttClient
 	suite.ThingCfg, suite.requestID, err = getThingConfigurationBootstrapping(t, cfg)
-	if err != nil {
-		defer suite.TearDown()
-		require.NoError(t, err, "cannot get thing configuration")
-	}
+	require.NoError(t, err, "cannot get thing configuration")
 }
 
 // getThingConfigurationBootstrapping retrieves information about the configured thing
