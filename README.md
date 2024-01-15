@@ -1,6 +1,8 @@
-![Kanto logo](https://github.com/eclipse-kanto/kanto/raw/main/logo/kanto.svg)
+[![Kanto logo](https://github.com/eclipse-kanto/kanto/raw/main/logo/kanto.svg)](https://eclipse.dev/kanto/)
 
 # Eclipse Kanto - Suite Bootstrapping
+
+[![Coverage](https://github.com/eclipse-kanto/suite-bootstrapping/wiki/coverage.svg)](#)
 
 The suite bootstrapping provides a mechanism for automatic provisioning of devices for connecting to a target suite.
 Devices can be shipped with a uniform clean setup without knowing the target suite subscription or tenancy
